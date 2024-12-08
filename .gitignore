@@ -1,0 +1,70 @@
+# Временно созданные файлы
+*.swp
+*.swo
+*~
+
+# Локальные файлы IDE
+.vscode/
+.idea/
+
+# Файлы логов
+logs/
+*.log
+
+# Файлы сессий
+session*
+
+# Файлы кэша
+cache/
+*.cache
+
+# Файлы сборки Docker
+Dockerfile*
+docker-compose.yml
+.dockerignore
+
+# Файлы сборки Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Файлы сборки для WebStorm
+.idea/
+*.iml
+*.iws
+
+# Файлы сборки для PyCharm
+out/
+*.iml
+*.ipr
+*.iws
+*.runConfig.xml
+*.log
+
+# Файлы сборки для IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+*.runConfig.xml
+*.log
+
+# Environments
+.env
+.env.dev
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Virtualenv
+.Python
+[Bb]in
+[Ii]nclude
+[Ll]ib
+[Ll]ib64
+[Ll]ocal
+pyvenv.cfg
+.venv
+pip-selfcheck.json
