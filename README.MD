@@ -10,7 +10,7 @@
 
 1. Убедитесь, что у вас установлен Python 3.7 или выше.
 2. Клонируйте репозиторий:
-git clone https://github.com/ваш-никнейм/to-do-list-api.git cd to-do-list-api
+git clone git@github.com:andre059/To-do-list.git
 3. Установите зависимости:
 poetry install
 
