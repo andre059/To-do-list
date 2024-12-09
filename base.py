@@ -1,17 +1,17 @@
-from sqlmodel import SQLModel
+from fastapi import Depends
+from sqlalchemy.ext.declarative import declarative_base
 
-from config import SessionLocal, engine
+from config import SessionLocal
 
-
-async def async_get_db():
-    async with SessionLocal() as session:
-        yield session
+Base = declarative_base()
 
 
-def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
-# def get_db():
-#     with SessionLocal() as session:
-#         yield session
+SessionDep = Depends(get_db)

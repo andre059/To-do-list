@@ -1,29 +1,33 @@
 import json
 import logging
-import asyncio
+from typing import Any
 
 from fastapi import FastAPI, Depends, Request, Response
 from sqlalchemy.orm import Session
 
-from app.services import TodoService
-from base import async_get_db, create_db_and_tables
+from app.models import Base, TodoItemResponse
+from base import get_db
+from config import engine
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
 
-@app.middleware("startup")
-async def startup():
-    await asyncio.run(create_db_and_tables())
+@app.post("/setup")
+def setup_database():
+    with engine.connect() as connection:
+        Base.metadata.drop_all(connection)
+        Base.metadata.create_all(connection)
+    return {"ok": "Database setup successful"}
 
 
 @app.middleware("http")
 async def db_session_middleware(request: Request, call_next):
     try:
         logger.debug("Attempting to get database session")
-        db = next(async_get_db())
+        db = next(get_db())
         logger.debug("Got database session")
         async with db:
             logger.debug("Entering async block")
@@ -35,12 +39,11 @@ async def db_session_middleware(request: Request, call_next):
         return Response(content=json.dumps({"error": "Database error"}), status_code=500)
 
 
-@app.get("/", response_model=dict)
-async def root(todo_service: TodoService = Depends()):
+@app.get("/", response_model=TodoItemResponse)
+def root(todo_service: Any = Depends()):
     return {"message": "Welcome to ToDo List API!"}
 
 
-# Для асинхронных операций используйте:
-@app.get("/async")
-async def async_root(db: Session = Depends(async_get_db)):
-    return {"message": "Async operation successful"}
+@app.get("/sync")
+def sync_root(db: Session = Depends(get_db)):
+    return {"message": "Sync operation successful"}

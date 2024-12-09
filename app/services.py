@@ -1,43 +1,43 @@
 from fastapi import HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy.orm import Session
 
 from .models import TodoItem
 from .schemas import TodoItemCreate, TodoItemUpdate
 
 
 class TodoService:
-    async def get_all(self, db: AsyncSession):
-        result = await db.execute(select(TodoItem))
-        return result.scalars().all()
+    def __init__(self, db: Session):
+        self.db = db
 
-    async def get_by_id(self, id: int, db: AsyncSession):
-        result = await db.execute(select(TodoItem).filter(TodoItem.id == id))
-        return result.scalars().first()
+    def get_all(self):
+        return self.db.query(TodoItem).all()
 
-    async def create(self, todo: TodoItemCreate, db: AsyncSession):
+    def get_by_id(self, id: int):
+        return self.db.query(TodoItem).filter(TodoItem.id == id).first()
+
+    def create(self, todo: TodoItemCreate):
         new_todo = TodoItem(**todo.dict())
-        db.add(new_todo)
-        await db.commit()
-        await db.refresh(new_todo)
-        return new_todo
+        self.db.add(new_todo)
+        self.db.commit()
+        self.db.refresh(new_todo)
+        return {"id": new_todo.id, "title": new_todo.title, "is_completed": new_todo.is_completed}
 
-    async def update(self, id: int, todo: TodoItemUpdate, db: AsyncSession):
-        existing_todo = await self.get_by_id(id, db)
+    def update(self, id: int, todo: TodoItemUpdate):
+        existing_todo = self.get_by_id(id)
         if not existing_todo:
             raise HTTPException(status_code=404, detail="Todo not found")
 
         for key, value in todo.dict().items():
             setattr(existing_todo, key, value)
 
-        await db.commit()
-        await db.refresh(existing_todo)
-        return existing_todo
+        self.db.commit()
+        self.db.refresh(existing_todo)
+        return {"id": existing_todo.id, "title": existing_todo.title, "is_completed": existing_todo.is_completed}
 
-    async def delete(self, id: int, db: AsyncSession):
-        todo = await self.get_by_id(id, db)
+    def delete(self, id: int):
+        todo = self.get_by_id(id)
         if not todo:
             raise HTTPException(status_code=404, detail="Todo not found")
 
-        await db.delete(todo)
-        await db.commit()
+        self.db.delete(todo)
+        self.db.commit()
