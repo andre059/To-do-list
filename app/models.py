@@ -21,3 +21,4 @@ class TodoItemResponse(BaseModel):
     id: int
     title: str
     is_completed: bool
+    created_at: datetime

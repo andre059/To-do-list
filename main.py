@@ -5,7 +5,9 @@ from typing import Any
 from fastapi import FastAPI, Depends, Request, Response
 from sqlalchemy.orm import Session
 
+from app.middleware import log_requests
 from app.models import Base, TodoItemResponse
+from app.routes import get_service
 from base import get_db
 from config import engine
 
@@ -13,6 +15,9 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+
+app.middleware("http")(log_requests)
 
 
 @app.post("/setup")
@@ -24,14 +29,14 @@ def setup_database():
 
 
 @app.middleware("http")
-async def db_session_middleware(request: Request, call_next):
+def db_session_middleware(request: Request, call_next):
     try:
         logger.debug("Attempting to get database session")
         db = next(get_db())
         logger.debug("Got database session")
-        async with db:
+        with db:
             logger.debug("Entering async block")
-            response = await call_next(request)
+            response = call_next(request)
             logger.debug("Response received")
             return response
     except Exception as e:
@@ -45,5 +50,5 @@ def root(todo_service: Any = Depends()):
 
 
 @app.get("/sync")
-def sync_root(db: Session = Depends(get_db)):
+def sync_root(db: Session = Depends(get_service)):
     return {"message": "Sync operation successful"}

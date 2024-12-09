@@ -7,11 +7,8 @@ Base = declarative_base()
 
 
 def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+    with SessionLocal() as session:
+        yield session
 
 
 SessionDep = Depends(get_db)
